@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details Page</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/main.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<body>
+<nav>
+    <div class="logo">
+        <a href="/">
+            <img src="/images/TRUNK.png" alt="Trunk" width="206px" height="49px">
+        </a>
+    </div>
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/cart-history">Orders</a></li>
+        <li><a href="/logged-user">User Detail</a></li>
+        <li><a th:if="${session.user != null && session.user.admin == 1}" href="/admin/books">Admin</a></li>
+        <li>
+            <a th:if="${session.user == null}" href="/login" id="login">Login</a>
+            <a th:unless="${session.user == null}" href="/logout" id="logout">Logout</a>
+        </li>
+        <div class="cart">
+            <a href="/cart"><i class="fa fa-shopping-cart cart-icon"></i></a>
+            <span class="item-count" id="cartItemCount"></span>
+        </div>
+
+    </ul>
+</nav>
+
+<div class="bar">
+    <div class="menu-category" >
+        <i class="fas fa-bars"></i>
+        <span>Categories</span>
+        <ul id="categoryDropdown" class="dropdown-menu">
+            <li><a href="/">All Categories</a></li>
+            <li><a th:href="@{/category/truyện ngắn}" >Truyện ngắn</a></li>
+            <li><a th:href="@{/category/tiểu thuyết}">Tiểu thuyết</a></li>
+            <li><a th:href="@{/category/kỹ năng sống}">Kỹ năng sống</a></li>
+            <li><a th:href="@{/category/tâm lý}" >Tâm lý</a></li>
+            <li><a th:href="@{/category/truyện tranh}" >Truyện tranh</a></li>
+            <li><a th:href="@{/category/kinh doanh}" >Kinh doanh</a></li>
+            <li><a th:href="@{/category/trinh thám - kinh dị}" >Trinh thám - kinh dị</a></li>
+            <li><a th:href="@{/category/lịch sử}" >Lịch sử</a></li>
+            <li><a th:href="@{/category/ngôn tình}" >Ngôn tình</a></li>
+        </ul>
+    </div>
+
+    <div class="search-bar">
+        <form action="/search" method="get">
+            <input type="text" placeholder="Search..." name="keyword">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    <div class="phone">
+        <i class="fas fa-phone"></i>
+        <span>0123456789</span>
+    </div>
+</div>
+
+
+
+<div class="product-grid col-10 offset-1 mb-5" style="font-family: 'Open Sans', sans-serif;">
+    <div class="row">
+        <div class="filter-sort">
+            <span>Sort By</span>
+                <select class="sortBySelect" onchange="filterBooks()">
+                    <option value="default">Default</option>
+                    <option value="bestseller_asc">Bestseller (Ascending)</option>
+                    <option value="bestseller_desc">Bestseller (Descending)</option>
+                    <option value="price_asc">Price (Ascending)</option>
+                    <option value="price_desc">Price (Descending)</option>
+                    <option value="name_asc">Name (A-Z)</option>
+                    <option value="name_desc">Name (Z-A)</option>
+                </select>
+        </div>
+    </div>
+<!--        <h5 th:if="${category}"  th:text="'Category: ' + ${category} + (${sortBy} ? ' - Sort By: ' + ${sortBy} : '')" class="text-center mt-2 mb-4"></h5>-->
+<!--        <div th:unless="${category}">-->
+<!--            <h5 th:if="${keyword}" th:text="'Search: ' + ${keyword} + (${sortBy} ? ' - Sort By: ' + ${sortBy} : '')" class="text-center mt-2 mb-4"></h5>-->
+<!--            <h5 th:unless="${keyword}" class="text-center mt-2 mb-4">All Books</h5>-->
+<!--        </div>-->
+        <div class="row" id ="bookList" th:fragment = "booksFragment">
+            <div class="col-3" th:each="book : ${books}">
+                <div class="product-card">
+                    <div class="product-image">
+                        <a th:href="@{/book/{id}(id = ${book.bookId})}" style="text-decoration: none">
+                            <img th:src="'/getImage/' + ${book.imageUrl}" alt="Product Image">
+                        </a>
+                    </div>
+                    <div class="product-details" th:with="formattedPrice=${#numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT')}">
+                        <h3 class="product-title" th:text="${book.title}"></h3>
+                        <p class="product-author" th:text="${book.author}"></p>
+                        <p class="product-price" th:text="${formattedPrice}  + ' đồng'"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

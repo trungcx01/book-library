@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/main.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <style>
+        /* CSS for Delete Button */
+        .delete-button {
+            padding: 0;
+            background: none;
+            border: none;
+            color: red;
+            cursor: pointer;
+        }
+
+        .delete-button:hover {
+            color: darkred;
+        }
+
+        /* CSS for Textareas */
+        textarea.form-control {
+            resize: none;
+        }
+    </style>
+</head>
+
+<body>
+<nav>
+    <div class="logo">
+        <a href="/">
+            <img src="/images/TRUNK.png" alt="Trunk" width="206px" height="49px">
+        </a>
+    </div>
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/cart-history">Orders</a></li>
+        <li><a href="/logged-user">User Detail</a></li>
+        <li><a th:if="${session.user != null && session.user.admin == 1}" href="/admin/books">Admin</a></li>
+        <li>
+            <a th:if="${session.user == null}" href="/login">Login</a>
+            <a th:if="${session.user != null}" id="logout" href="/logout">Logout</a>
+        </li>
+        <div class="cart">
+            <a href="/cart"><i class="fa fa-shopping-cart cart-icon"></i></a>
+            <span class="item-count" id="cartItemCount"></span>
+        </div>
+
+    </ul>
+</nav>
+
+<h1 class="text-center">Cart</h1>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-10 offset-1">
+            <form id="checkoutForm" action="/create-cart" method="POST">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+
+                <div class="row">
+                    <div class="col-lg-5">
+                        <div class="mb-3">
+                            <label for="description" class="form-label"><b>Description</b></label>
+                            <textarea id="description" class="form-control" rows="3" placeholder="Description..."
+                                      name="description" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="shippingAddress" class="form-label"><b>Shipping Address</b></label>
+                            <textarea id="shippingAddress" class="form-control" rows="3" placeholder="Address"
+                                      name="shippingAddress" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5 offset-lg-1">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                            <tr>
+                                <th>Card Total</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <div
+                                            class="card-total d-flex justify-content-between align-items-center">
+                                        <p>Total:</p>
+                                        <p id="total-price"></p>
+                                    </div>
+                                    <input type="submit"
+                                           class="col-12 btn btn-primary form-control" onclick="return confirm('Bạn có chắc chắn muốn đặt hàng?');" value="Check Out">
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script src="/js/main.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function updateItemCount() {
+      let cartItems = JSON.parse(localStorage.getItem('cartItems'));
+      const itemCount = cartItems ? cartItems.length : 0;
+      document.querySelector('#cartItemCount').textContent = itemCount;
+    }
+
+
+<!--xử lý các sự kiện sau khi tài liệu HTML đã được tải xong-->
+        $(document).ready(function () {
+            // Gán sự kiện submit cho form
+            $('#checkoutForm').on('submit', function () {
+                // Xóa dữ liệu trong Local Storage
+                localStorage.clear();
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Lấy thông tin giỏ hàng từ Local Storage
+            var cartItems = JSON.parse(localStorage.getItem('cartItems'));
+
+            // Kiểm tra xem có sản phẩm trong giỏ hàng hay không
+            if (cartItems && cartItems.length > 0) {
+                // Lặp qua các sản phẩm và thêm chúng vào bảng
+                var tableBody = document.querySelector('tbody');
+
+                for (var i = 0; i < cartItems.length; i++) {
+                    var product = cartItems[i];
+
+                    var row = document.createElement('tr');
+
+                    var imageCell = document.createElement('td');
+                    var imageElement = document.createElement('img');
+                    imageElement.setAttribute('src', product.image);
+                    imageElement.setAttribute('width', '120px');
+                    imageElement.setAttribute('height', '120px');
+                    imageCell.appendChild(imageElement);
+                    row.appendChild(imageCell);
+
+                    var nameCell = document.createElement('td');
+                    var nameElement = document.createElement('input');
+                    nameElement.setAttribute('type', 'text');
+                    nameElement.setAttribute('name', 'title');
+                    nameElement.setAttribute('value', product.name);
+                    nameElement.setAttribute('readonly', 'true');
+                    nameCell.appendChild(nameElement);
+                    row.appendChild(nameCell);
+
+                    var quantityCell = document.createElement('td');
+                    var quantityElement = document.createElement('input');
+                    quantityElement.setAttribute('type', 'number');
+                    quantityElement.setAttribute('name', 'quantity');
+                    quantityElement.setAttribute('min', '1');
+                    quantityElement.setAttribute('max', '20');
+                    quantityElement.setAttribute('value', product.quantity);
+                    quantityElement.setAttribute('data-index', i); // Lưu chỉ số
+                    quantityElement.addEventListener('input', updateTotal);
+                    quantityCell.appendChild(quantityElement);
+                    row.appendChild(quantityCell);
+
+                    var priceCell = document.createElement('td');
+                    priceCell.textContent = product.price;
+                    row.appendChild(priceCell);
+
+                    var totalCell = document.createElement('td');
+                    var totalInputElement = document.createElement('input');
+                    totalInputElement.setAttribute('type', 'number');
+                    totalInputElement.setAttribute('name', 'total');
+                    totalInputElement.setAttribute('class', 'totalInput');
+                    totalInputElement.setAttribute('value', product.price * product.quantity);
+                    totalInputElement.setAttribute('readonly', 'true');
+                    totalCell.appendChild(totalInputElement);
+                    row.appendChild(totalCell);
+
+                    var deleteCell = document.createElement('td');
+                    var deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Xóa';
+                    deleteButton.setAttribute('data-index', i); // Lưu chỉ số
+                    deleteButton.classList.add('delete-button');
+                    deleteButton.addEventListener('click', deleteItem);
+                    deleteCell.appendChild(deleteButton);
+                    row.appendChild(deleteCell);
+
+                    tableBody.appendChild(row);
+                }
+
+                var cartTotal = 0;
+                for (var i = 0; i < cartItems.length; i++) {
+                    cartTotal += cartItems[i].total;
+                }
+                var total = document.getElementById('total-price');
+                total.textContent = cartTotal + " đồng";
+            }
+
+            function updateTotal(event) {
+                var index = parseInt(event.target.getAttribute('data-index')); // Lấy chỉ số sản phẩm
+                var quantity = parseInt(event.target.value);
+
+
+                cartItems[index].quantity = quantity;
+                cartItems[index].total = quantity * cartItems[index].price;
+
+                // Cập nhật giá trị trong cột "total" của hàng tương ứng
+                var totalElement = event.target.parentNode.parentNode.querySelector('.totalInput');
+                totalElement.value = cartItems[index].total;
+
+                // Tính toán lại tổng giá trị của giỏ hàng
+                var cartTotal = 0;
+                for (var i = 0; i < cartItems.length; i++) {
+                    cartTotal += cartItems[i].total;
+                }
+
+                // Cập nhật giá trị tổng giá trị trên giao diện
+                var total = document.getElementById('total-price');
+                total.textContent = cartTotal + " đồng";
+            }
+
+            function deleteItem(event) {
+                var index = event.target.getAttribute('data-index'); // Lấy chỉ số
+
+                // Xóa sản phẩm khỏi cartItems
+                cartItems.splice(index, 1);
+
+                // Cập nhật Local Storage
+                localStorage.setItem('cartItems', JSON.stringify(cartItems));
+
+                // Xóa hàng khỏi bảng
+                var row = event.target.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+
+                var cartTotal = 0;
+                for (var i = 0; i < cartItems.length; i++) {
+                    cartTotal += cartItems[i].total;
+                }
+                var total = document.getElementById('total-price');
+                total.textContent = cartTotal + " đồng";
+
+                updateItemCount();
+            }
+        });
+    </script>
+</body>
+</html>

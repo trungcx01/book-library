@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart Orders</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="/js/main.js"></script>
+</head>
+<body>
+<nav>
+    <div class="logo">
+        <a href="/">
+            <img src="/images/TRUNK.png" alt="Trunk" width="206px" height="49px">
+        </a>
+    </div>
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/cart-history">Orders</a></li>
+        <li><a href="/logged-user">User Detail</a></li>
+        <li><a th:if="${session.user != null && session.user.admin == 1}" href="/admin/books">Admin</a></li>
+        <li>
+            <a th:if="${session.user == null}" href="/login">Login</a>
+            <a th:if="${session.user != null}" id="logout" href="/logout">Logout</a>
+        </li>
+        <div class="cart">
+            <a href="/cart"><i class="fa fa-shopping-cart cart-icon"></i></a>
+            <span class="item-count" id="cartItemCount"></span>
+        </div>
+
+    </ul>
+</nav>
+
+
+<div class="container">
+    <h1 class="text-center mt-5">Orders History</h1>
+    <h5 class="text-center mt-2" th:text="'User: ' + ${session.user.fullname}"></h5>
+
+
+    <div th:each="cart : ${carts}" class="card mt-5">
+        <div class="card-header bg-primary text-white">
+            <h5>Cart ID: <span th:text="${cart.cartId}"></span></h5>
+            <p>Date: <span th:text="${cart.createdAt}"></span></p>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Image</th>
+                    <th>Book</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${cart.cartItems}">
+                    <td>
+                        <img th:src="'/getImage/' + ${item.book.imageUrl}" width="150px" height="150px">
+                    </td>
+                    <td th:text="${item.book.title}"></td>
+                    <td th:text="${item.quantity}"></td>
+                    <td th:text="${item.book.price}"></td>
+                    <td th:text="${item.price}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer row">
+            <div class="col-6">
+                <p>Total Price: <span th:text="${cart.totalPrice} + ' đồng'"></span></p>
+                <p>Finished: <input type="checkbox" th:checked="${cart.status == 1}" class="form-checkbox" disabled></p>
+            </div>
+            <div class="col-6 text-right">
+                <a th:if="${cart.status == 0}" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng?');" th:href="@{/delete-cart/{cartId}(cartId = ${cart.cartId})}" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Cancel
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

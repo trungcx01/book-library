@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details Page</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="/js/main.js"></script>
+</head>
+<body>
+<nav>
+  <div class="logo">
+    <a href="/">
+      <img src="/images/TRUNK.png" alt="Trunk" width="206px" height="49px">
+    </a>
+  </div>
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/cart-history">Orders</a></li>
+    <li><a href="/logged-user">User Detail</a></li>
+    <li><a th:if="${session.user != null && session.user.admin == 1}" href="/admin/books">Admin</a></li>
+    <li>
+      <a th:if="${session.user == null}" href="/login">Login</a>
+      <a th:if="${session.user != null}" href="/logout">Logout</a>
+    </li>
+    <div class="cart">
+      <a href="/cart"><i class="fa fa-shopping-cart cart-icon"></i></a>
+      <span class="item-count" id="cartItemCount"></span>
+    </div>
+
+  </ul>
+</nav>
+
+<div class="bar">
+  <div class="menu-category" >
+    <i class="fas fa-bars"></i>
+    <span>Categories</span>
+    <ul id="categoryDropdown" class="dropdown-menu">
+      <li><a href="/">All Categories</a></li>
+      <li><a th:href="@{/category/Truyện ngắn}" >Truyện ngắn</a></li>
+      <li><a th:href="@{/category/Tiểu thuyết}">Tiểu thuyết</a></li>
+      <li><a th:href="@{/category/Kỹ năng sống}">Kỹ năng sống</a></li>
+      <li><a th:href="@{/category/Tâm lý}" >Tâm lý</a></li>
+      <li><a th:href="@{/category/Truyện tranh}" >Truyện tranh</a></li>
+      <li><a th:href="@{/category/Kinh doanh}" >Kinh doanh</a></li>
+      <li><a th:href="@{/category/Trinh thám - kinh dị}" >Trinh thám - kinh dị</a></li>
+      <li><a th:href="@{/category/Lịch sử}" >Lịch sử</a></li>
+      <li><a th:href="@{/category/Ngôn tình}" >Ngôn tình</a></li>
+    </ul>
+  </div>
+
+  <div class="search-bar">
+    <form action="/search" method="get">
+      <input type="text" placeholder="Search..." name="keyword">
+      <button type="submit">Search</button>
+    </form>
+  </div>
+  <div class="phone">
+    <i class="fas fa-phone"></i>
+    <span>0123456789</span>
+  </div>
+</div>
+
+
+<div class="flex-box">
+
+  <div class="left col-4">
+    <div class="big-img">
+      <img th:src="'/getImage/' + ${book.imageUrl}">
+    </div>
+  </div>
+
+  <div class="right col-6 offset-1">
+    <div class="url" th:text="'Home > Book > ' + ${book.category}"></div>
+    <div class="pname" th:text="${book.title}"></div>
+    <div class="ratings">
+       <span th:each="star : ${#numbers.sequence(1, 5)}">
+          <i th:class="${star <= book.getAverageRate() ? 'fas fa-star' : (star - book.getAverageRate() < 1  ? 'fas fa-star-half-alt' : 'far fa-star')}"></i>
+      </span>
+    </div>
+
+    <div class="price" th:with="formattedPrice=${#numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT')}">
+      <span th:text="${formattedPrice}  + ' đồng'"></span>
+      <input class="priceInput" type="number" th:value="${book.price}" style="display: none">
+    </div>
+
+    <div class="author">Tác giả:
+      <a style="text-decoration: none" th:href="@{/search(keyword=${book.author})}">
+        <span th:text="${book.author}"></span>
+      </a>
+    </div>
+
+    <div class="pages" th:text="'Số trang: ' + ${book.pages}"></div>
+
+    <div class="releaseDate" th:text="'Ngày phát hành: ' + ${book.releaseDate}"></div>
+
+<!--    <div class="description">-->
+<!--      <span>"<span th:text="${book.description}"></span>"</span>-->
+<!--    </div>-->
+
+
+
+
+
+    <div class="quantity">
+      <label for="quantity">Quantity:</label>
+      <input id="quantity" class="quantity-input" type="number" min="1" max="5" value="1">
+    </div>
+
+    <div class="btn-box">
+      <button class="cart-btn" onclick="addToCart()">Add to Cart</button>
+    </div>
+  </div>
+</div>
+
+<div class="reviews-section">
+  <h2 class="reviews-heading">All Reviews</h2>
+  <div class="review-list" th:each="review : ${book.reviews}">
+    <div class="review">
+      <div class="review-header">
+        <div class="review-rating">
+          <span th:each="star : ${#numbers.sequence(1, 5)}">
+          <i th:class="${star <= review.reviewRate ? 'fas fa-star' : (star - review.reviewRate < 1  ? 'fas fa-star-half-alt' : 'far fa-star')}"></i>
+      </span>
+
+        </div>
+        <div class="dropdown">
+          <button class="dropdown-btn"><i class="fas fa-ellipsis-v"></i></button>
+          <div class="dropdown-content">
+            <a th:if="${session.user != null && session.user.userId == review.user.userId}" th:href="@{/book/{id}/delete-review/{reviewId}(id=${book.bookId}, reviewId=${review.reviewId})}">Xóa</a>
+          </div>
+        </div>
+      </div>
+      <div class="review-comment">
+        <div class="review-user" th:text="${review.user.fullname}"></div>
+        <div class="review-text" th:text="${review.comment}"></div>
+      </div>
+    </div>
+  </div>
+  <div class="add-review">
+    <h3>Add a Review</h3>
+    <form th:action="@{/book/{id}/new-comment(id= ${book.bookId})}" method="post">
+      <div class="rating">
+        <i class="far fa-star" onclick="selectStar(1)"></i>
+        <i class="far fa-star" onclick="selectStar(2)"></i>
+        <i class="far fa-star" onclick="selectStar(3)"></i>
+        <i class="far fa-star" onclick="selectStar(4)"></i>
+        <i class="far fa-star" onclick="selectStar(5)"></i>
+      </div>
+
+      <input id="rating-input" type="hidden" value="0" name="reviewRate">
+      <textarea class="review-comment-input" rows="6" placeholder="Add a comment" name="comment"></textarea>
+      <button type="submit" class="add-comment-btn">Add</button>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

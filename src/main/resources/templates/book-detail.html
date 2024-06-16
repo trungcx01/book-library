@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Book</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .required-field {
+        color: red;
+        margin-left: 5px;
+        }
+
+        .error-message {
+        font-size: 15px; /* Giảm kích thước chữ */
+        padding: 8px 8px; /* Giảm khoảng cách nội dung */
+        margin: 0 0 4px;
+         opacity: 0;
+        animation: fade-in 0.5s ease-in-out forwards;
+      }
+
+      @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1 class="mb-2 text-center">Book</h1>
+
+    <form style="margin-bottom: 60px" th:object="${book}" th:action="@{/admin/book/save/{id}(id=${book.bookId})}" th:method="${id < 0} ? POST : PUT" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-6">
+                <div class="row mb-4">
+                    <input type="hidden" th:field="*{bookId}">
+                    <div class="col-6">
+                        <label for="title" class="form-label"><b> Title<span class="required-field">*</span> </b></label>
+                        <input type="text" class="form-control data" id="title" th:field="*{title}" th:disabled="${id >0}" th:value="${book.title}">
+                    </div>
+                    <div class="col-6">
+                        <label for="author" class="form-label"><b> Author<span class="required-field">*</span> </b></label>
+                        <input type="text" class="form-control data" id="author" th:field="*{author}" th:disabled="${id >0}" th:value="${book.author}">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="description" class="form-label"><b>Description</b></label>
+                    <textarea id="description" th:field="*{description}" class="form-control data" rows="5" placeholder="Viết đoạn văn..." th:disabled="${id >0}">${book.description}</textarea>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <label for="releaseDate" class="form-label"><b>Release Date<span class="required-field">*</span> </b></label>
+                        <input type="date" class="form-control data" id="releaseDate" th:field="*{releaseDate}" th:disabled="${id >0}" th:value="${book.releaseDate}">
+                    </div>
+
+                    <div class="col-6">
+                        <label for="pages" class="form-label"><b>Pages</b></label>
+                        <input type="number" class="form-control data" id="pages" th:field="*{pages}" th:disabled="${id >0}" th:value="${book.pages}">
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-6 form-group">
+                        <label for="category" class="form-label"><b> Category<span class="required-field">*</span> </b></label>
+                        <select class="form-select data" id="category" th:field="*{category}" th:disabled="${id >0}">
+                            <option value="">All Categories</option>
+                            <option value="Truyện ngắn">Truyện ngắn</option>
+                            <option value="Tiểu thuyết">Tiểu thuyết</option>
+                            <option value="Kỹ năng sống">Kỹ năng sống</option>
+                            <option value="Tâm lý">Tâm lý</option>
+                            <option value="Truyện tranh">Truyện tranh</option>
+                            <option value="Kinh doanh">Kinh doanh</option>
+                            <option value="Trinh thám - kinh dị">Trinh thám - kinh dị</option>
+                            <option value="Lịch sử">Lịch sử</option>
+                            <option value="Ngôn tình">Ngôn tình</option>
+                        </select>
+                    </div>
+
+                    <div class="col-6">
+                        <label for="price" class="form-label"><b>Price</b></label>
+                        <input type="number" class="form-control data" id="price" th:field="*{price}" th:disabled="${id >0}" th:value="${book.price}">
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <label for="sold" class="form-label"><b>Sold</b></label>
+                        <input type="number" class="form-control data" id="sold" th:field="*{sold}" th:disabled="${id >0}" th:value="${book.sold}">
+                    </div>
+
+                    <div class="col-6">
+                        <label for="stockQuantity" class="form-label"><b>Stock Quantity</b></label>
+                        <input type="number" class="form-control data" id="stockQuantity" th:field="*{stockQuantity}"  th:disabled="${id >0}" th:value="${book.stockQuantity}">
+                    </div>
+                </div>
+            </div>
+            <div class="col-5 offset-1 mt-2">
+                <div class="row">
+                    <div class="text-center">
+                        <div class="mb-3">
+                            <label id="lbl-button" for="image" class="btn btn-secondary form-label"><b>Upload Image</b></label>
+                            <input type="file" class="form-control-file data" id="image" name="image" style="display: none" onchange="handleFileChange(event)" th:disabled="${id >0}">
+                            <button th:if="${id >0}" type="button" id="clear" class="btn btn-dark form-label data" onclick="clearImage(event)" disabled><b>Clear Image</b></button>
+                        </div>
+                        <input type="hidden" id="empty" name="empty" value="">
+                        <div id="imagePreview" class="d-flex justify-content-center align-items-center" style="height: 300px;">
+                            <img th:if="${book.imageUrl}" th:src="'/getImage/' + ${book.imageUrl}" class="img-fluid" alt="Uploaded Image" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                        </div>
+                        <div class="alert alert-danger alert-sm error-message"  role="alert" th:each="error : ${errors}">
+                            <span th:text="${error.defaultMessage}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button th:attr="type=${id <= 0  ? 'submit' : 'button'}, onclick=${id >0 ? 'editData(event)' : null}, style='display: none'" id="submit-btn" ></button>
+        </div>
+    </form>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+<footer class="text-center fixed-bottom" style="border-top: 1px solid #ccc;">
+    <div class="container">
+        <div class="row">
+            <div class="col-1">
+                <a class="btn btn-primary mt-3 mb-3 col-12" href="/admin/books">
+                    <b>
+                        <span>Back</span>
+                    </b>
+                </a>
+            </div>
+            <div class="col-1 offset-10">
+                <label id="submit-lbl" for="submit-btn" class="btn btn-primary mt-3 mb-3 col-12">
+                    <b>
+                        <span th:if="${id > 0}">Edit</span>
+                        <span th:unless="${id > 0}">Add</span>
+                    </b>
+                </label>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</html>
